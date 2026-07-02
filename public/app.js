@@ -666,6 +666,23 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
 })();
 
 // =============================================
+// SPLASH SCREEN
+// =============================================
+(function () {
+  const splash = document.getElementById('splash');
+  const splashBtn = document.getElementById('splashBtn');
+  if (!splash || !splashBtn) return;
+
+  document.body.style.overflow = 'hidden';
+
+  splashBtn.addEventListener('click', () => {
+    splash.classList.add('hiding');
+    document.body.style.overflow = '';
+    setTimeout(() => { splash.style.display = 'none'; }, 700);
+  });
+})();
+
+// =============================================
 // INIT
 // =============================================
 initCanvas();
