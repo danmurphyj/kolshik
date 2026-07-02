@@ -8,7 +8,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'grafcoin2024';
 const UPLOADS_DIR = path.join(__dirname, 'uploads');
-const DB_FILE = path.join(__dirname, 'db.json');
+const DB_FILE = path.join(UPLOADS_DIR, 'db.json');
 
 // ---- Setup directories ----
 if (!fs.existsSync(UPLOADS_DIR)) {

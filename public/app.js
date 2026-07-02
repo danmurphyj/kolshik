@@ -620,6 +620,52 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
 });
 
 // =============================================
+// CA COPY
+// =============================================
+(function () {
+  const CA_FULL = '0x0000000000000000000000000000000000000000';
+  const copyBtn = document.getElementById('caCopy');
+  if (!copyBtn) return;
+  copyBtn.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(CA_FULL);
+    } catch {
+      const ta = document.createElement('textarea');
+      ta.value = CA_FULL;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+    }
+    copyBtn.textContent = 'COPIED!';
+    copyBtn.classList.add('copied');
+    setTimeout(() => {
+      copyBtn.textContent = 'COPY';
+      copyBtn.classList.remove('copied');
+    }, 2000);
+  });
+})();
+
+// =============================================
+// SECRET ADMIN ACCESS — click logo 5 times
+// =============================================
+(function () {
+  const logo = document.querySelector('.logo');
+  let clicks = 0;
+  let timer;
+  logo.addEventListener('click', function () {
+    clicks++;
+    clearTimeout(timer);
+    timer = setTimeout(() => { clicks = 0; }, 2000);
+    if (clicks >= 5) {
+      clicks = 0;
+      clearTimeout(timer);
+      openAdminModal();
+    }
+  });
+})();
+
+// =============================================
 // INIT
 // =============================================
 initCanvas();
