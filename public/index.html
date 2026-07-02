@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GRAFCOIN — Graffiti Wall</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ========== HEADER ========== -->
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="#" class="logo">GRAF<span>COIN</span></a>
+      <nav class="nav">
+        <a href="#draw" class="nav-link">Draw</a>
+        <a href="#gallery" class="nav-link">Gallery</a>
+        <button class="btn-admin-open" id="btnAdminOpen">Admin</button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ========== HERO ========== -->
+  <section class="hero">
+    <div class="hero-noise"></div>
+    <div class="hero-content">
+      <div class="hero-tag">$GRAF</div>
+      <h1 class="hero-title">LEAVE YOUR MARK<br/><span class="neon-green">ON THE BLOCKCHAIN</span></h1>
+      <p class="hero-sub">The eternal graffiti wall on the blockchain. Draw. Save. Become a legend.</p>
+      <div class="hero-ctas">
+        <a href="#draw" class="btn btn-primary">Start Drawing</a>
+        <a href="#gallery" class="btn btn-outline">View Wall</a>
+      </div>
+      <div class="hero-stats">
+        <div class="stat"><span class="stat-val" id="statCount">—</span><span class="stat-label">graffiti</span></div>
+        <div class="stat-div"></div>
+        <div class="stat"><span class="stat-val">3</span><span class="stat-label">per hour limit</span></div>
+        <div class="stat-div"></div>
+        <div class="stat"><span class="stat-val">∞</span><span class="stat-label">forever</span></div>
+      </div>
+    </div>
+    <div class="hero-deco">
+      <div class="deco-circle c1"></div>
+      <div class="deco-circle c2"></div>
+      <div class="deco-circle c3"></div>
+    </div>
+  </section>
+
+  <!-- ========== DRAW SECTION ========== -->
+  <section id="draw" class="section draw-section">
+    <div class="container">
+      <div class="section-label">// CREATE</div>
+      <h2 class="section-title">Paint the <span class="neon-pink">wall</span></h2>
+      <p class="section-sub">Pick a tool, pick a color — leave your graffiti forever</p>
+
+      <div class="canvas-wrapper">
+        <!-- Toolbar -->
+        <div class="toolbar">
+          <div class="toolbar-group">
+            <button class="tool-btn active" id="toolSpray" title="Spray Can">
+              <span class="tool-icon">🎨</span>
+              <span class="tool-name">Spray</span>
+            </button>
+            <button class="tool-btn" id="toolBrush" title="Brush">
+              <span class="tool-icon">✏️</span>
+              <span class="tool-name">Brush</span>
+            </button>
+            <button class="tool-btn" id="toolEraser" title="Eraser">
+              <span class="tool-icon">🧹</span>
+              <span class="tool-name">Eraser</span>
+            </button>
+          </div>
+
+          <div class="toolbar-sep"></div>
+
+          <div class="toolbar-group colors-group">
+            <div class="color-swatches">
+              <button class="swatch active" data-color="#ff2d55" style="background:#ff2d55;" title="Red"></button>
+              <button class="swatch" data-color="#ff9500" style="background:#ff9500;" title="Orange"></button>
+              <button class="swatch" data-color="#ffcc00" style="background:#ffcc00;" title="Yellow"></button>
+              <button class="swatch" data-color="#34c759" style="background:#34c759;" title="Green"></button>
+              <button class="swatch" data-color="#00e5ff" style="background:#00e5ff;" title="Cyan"></button>
+              <button class="swatch" data-color="#af52de" style="background:#af52de;" title="Purple"></button>
+              <button class="swatch" data-color="#ffffff" style="background:#ffffff;" title="White"></button>
+              <button class="swatch swatch-dark" data-color="#111118" style="background:#111118;" title="Black"></button>
+            </div>
+            <div class="custom-color-wrap">
+              <label class="custom-color-label" title="Custom color">
+                <input type="color" id="customColor" value="#ff2d55" />
+                <span>+</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="toolbar-sep"></div>
+
+          <div class="toolbar-group size-group">
+            <label class="size-label">Size: <span id="sizeVal">20</span></label>
+            <input type="range" id="sizeSlider" min="5" max="60" value="20" class="size-slider" />
+          </div>
+
+          <div class="toolbar-sep"></div>
+
+          <div class="toolbar-group">
+            <button class="btn-clear" id="btnClear">Clear</button>
+          </div>
+        </div>
+
+        <!-- Canvas -->
+        <div class="canvas-container">
+          <canvas id="grafCanvas" width="700" height="450" style="touch-action: none;"></canvas>
+        </div>
+
+        <!-- Save area -->
+        <div class="save-area">
+          <input
+            type="text"
+            id="authorInput"
+            placeholder="Your nickname (optional)"
+            maxlength="50"
+            class="author-input"
+          />
+          <button class="btn btn-primary btn-save" id="btnSave">
+            <span id="saveBtnText">Save Graffiti</span>
+          </button>
+        </div>
+
+        <div class="status-msg" id="statusMsg"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== GALLERY SECTION ========== -->
+  <section id="gallery" class="section gallery-section">
+    <div class="container">
+      <div class="section-label">// GALLERY</div>
+      <h2 class="section-title">Graffiti <span class="neon-yellow">wall</span></h2>
+      <p class="section-sub">Everything painted here stays forever</p>
+
+      <div class="gallery-grid" id="galleryGrid">
+        <div class="gallery-loading" id="galleryLoading">
+          <div class="loading-spinner"></div>
+          <span>Loading...</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== FOOTER ========== -->
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-logo">GRAF<span>COIN</span></div>
+      <p class="footer-copy">© 2024 GRAFCOIN. All rights reserved on the blockchain.</p>
+      <p class="footer-disc">This is a memecoin project for entertainment. Not investment advice.</p>
+      <a href="#" class="admin-link" id="footerAdminLink">admin</a>
+    </div>
+  </footer>
+
+  <!-- ========== ADMIN MODAL ========== -->
+  <div class="modal-overlay" id="adminModal">
+    <div class="modal">
+      <button class="modal-close" id="modalClose">✕</button>
+      <div class="modal-icon">🔐</div>
+      <h3 class="modal-title">Admin Panel</h3>
+      <p class="modal-sub" id="modalSub">Enter password to access admin controls</p>
+      <input
+        type="password"
+        id="adminPassInput"
+        class="admin-pass-input"
+        placeholder="Password..."
+        autocomplete="current-password"
+      />
+      <div class="modal-error" id="modalError"></div>
+      <button class="btn btn-primary modal-login-btn" id="btnAdminLogin">Login</button>
+      <button class="btn btn-outline modal-logout-btn" id="btnAdminLogout" style="display:none;">Logout</button>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
