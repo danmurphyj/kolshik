@@ -27,8 +27,6 @@
 
     <!-- Content -->
     <div class="splash-inner">
-      <div class="splash-badge">$ARTIST &times; STREET ART &times; BLOCKCHAIN</div>
-      <div class="splash-icon">🎨</div>
       <h1 class="splash-title">
         YO, I'M A<br>
         <span class="splash-t-green">STREET</span><br>
@@ -101,10 +99,7 @@
               <span class="tool-icon">🎨</span>
               <span class="tool-name">Spray</span>
             </button>
-            <button class="tool-btn" id="toolBrush" title="Brush">
-              <span class="tool-icon">✏️</span>
-              <span class="tool-name">Brush</span>
-            </button>
+
             <button class="tool-btn" id="toolEraser" title="Eraser">
               <span class="tool-icon">🧹</span>
               <span class="tool-name">Eraser</span>
@@ -148,6 +143,7 @@
 
         <!-- Canvas -->
         <div class="canvas-container">
+          <canvas id="bgCanvas" width="700" height="450" aria-hidden="true"></canvas>
           <canvas id="grafCanvas" width="700" height="450" style="touch-action: none;"></canvas>
         </div>
 

@@ -21,6 +21,8 @@ let adminPassword = null;
 // ---- DOM refs ----
 const canvas = document.getElementById('grafCanvas');
 const ctx = canvas.getContext('2d');
+const bgCanvas = document.getElementById('bgCanvas');
+const bgCtx = bgCanvas.getContext('2d');
 const toolBtns = document.querySelectorAll('.tool-btn');
 const swatches = document.querySelectorAll('.swatch');
 const customColorInput = document.getElementById('customColor');
@@ -48,28 +50,32 @@ const btnAdminLogout = document.getElementById('btnAdminLogout');
 // =============================================
 // CANVAS INIT
 // =============================================
-function initCanvas() {
-  ctx.fillStyle = BG_COLOR;
-  ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
-  drawBrickPattern();
+function initBgCanvas() {
+  bgCtx.fillStyle = BG_COLOR;
+  bgCtx.fillRect(0, 0, CANVAS_W, CANVAS_H);
+  drawBrickPattern(bgCtx);
 }
 
-function drawBrickPattern() {
-  ctx.save();
+function initCanvas() {
+  ctx.clearRect(0, 0, CANVAS_W, CANVAS_H);
+}
+
+function drawBrickPattern(c) {
+  c.save();
 
   const brickH = 30;
   const brickW = 70;
   const lineColor = 'rgba(255,255,255,0.03)';
 
-  ctx.strokeStyle = lineColor;
-  ctx.lineWidth = 1.5;
+  c.strokeStyle = lineColor;
+  c.lineWidth = 1.5;
 
   // Horizontal lines
   for (let y = brickH; y < CANVAS_H; y += brickH) {
-    ctx.beginPath();
-    ctx.moveTo(0, y);
-    ctx.lineTo(CANVAS_W, y);
-    ctx.stroke();
+    c.beginPath();
+    c.moveTo(0, y);
+    c.lineTo(CANVAS_W, y);
+    c.stroke();
   }
 
   // Vertical staggered lines
@@ -79,14 +85,14 @@ function drawBrickPattern() {
     const y2 = y1 + brickH;
 
     for (let x = offset; x < CANVAS_W; x += brickW) {
-      ctx.beginPath();
-      ctx.moveTo(x, y1);
-      ctx.lineTo(x, y2);
-      ctx.stroke();
+      c.beginPath();
+      c.moveTo(x, y1);
+      c.lineTo(x, y2);
+      c.stroke();
     }
   }
 
-  ctx.restore();
+  c.restore();
 }
 
 // =============================================
@@ -118,27 +124,82 @@ function getPos(e) {
 // =============================================
 // DRAWING TOOLS
 // =============================================
+
+function hexToRgba(hex, alpha) {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+
 function sprayPaint(x, y) {
-  const radius = brushSize * 1.5;
-  const density = 30;
+  const radius = brushSize * 2.2;
 
   ctx.save();
-  ctx.fillStyle = currentColor;
 
-  for (let i = 0; i < density; i++) {
+  // Soft radial core — wet paint center
+  const grad = ctx.createRadialGradient(x, y, 0, x, y, radius * 0.45);
+  grad.addColorStop(0, hexToRgba(currentColor, 0.07));
+  grad.addColorStop(1, hexToRgba(currentColor, 0));
+  ctx.fillStyle = grad;
+  ctx.beginPath();
+  ctx.arc(x, y, radius * 0.45, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Fine mist — Gaussian distribution (dense center, fades out)
+  const count = Math.max(55, Math.floor(brushSize * 3.2));
+  for (let i = 0; i < count; i++) {
     const angle = Math.random() * Math.PI * 2;
-    const r = Math.pow(Math.random(), 0.6) * radius;
+    // Box-Muller Gaussian, clamped to radius
+    const gauss = Math.sqrt(-2 * Math.log(Math.random() || 1e-6)) * Math.cos(2 * Math.PI * Math.random());
+    const r = Math.min(Math.abs(gauss) * radius * 0.4, radius);
+    const dist = r / radius;
+
     const dx = Math.cos(angle) * r;
     const dy = Math.sin(angle) * r;
 
-    const dotSize = 0.5 + Math.random() * 2;
-    ctx.globalAlpha = 0.6 + Math.random() * 0.4;
+    const dotSize = 0.2 + Math.random() * (1.5 - dist * 0.9);
+    const alpha = (0.02 + Math.random() * 0.1) * (1 - dist * 0.55);
+
+    ctx.globalAlpha = Math.max(0.01, alpha);
+    ctx.fillStyle = currentColor;
     ctx.beginPath();
     ctx.arc(x + dx, y + dy, dotSize, 0, Math.PI * 2);
     ctx.fill();
   }
 
+  // Overspray — stray particles beyond main radius
+  const sprayCount = Math.floor(brushSize * 1.4);
+  for (let i = 0; i < sprayCount; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const r = radius * (0.8 + Math.random() * 1.1);
+    ctx.globalAlpha = 0.006 + Math.random() * 0.025;
+    ctx.fillStyle = currentColor;
+    ctx.beginPath();
+    ctx.arc(
+      x + Math.cos(angle) * r,
+      y + Math.sin(angle) * r,
+      0.2 + Math.random() * 0.55,
+      0, Math.PI * 2
+    );
+    ctx.fill();
+  }
+
   ctx.restore();
+}
+
+// =============================================
+// DRIP SYSTEM (disabled)
+// =============================================
+const drips = [];
+let dripRafId = null;
+
+function animateDrips() {
+  if (drips.length > 0) {
+    dripRafId = requestAnimationFrame(animateDrips);
+  } else {
+    dripRafId = null;
+  }
 }
 
 function startBrush(x, y) {
@@ -157,7 +218,13 @@ function continueBrush(x, y) {
   const midX = (lastX + x) / 2;
   const midY = (lastY + y) / 2;
 
-  ctx.strokeStyle = currentTool === 'eraser' ? BG_COLOR : currentColor;
+  if (currentTool === 'eraser') {
+    ctx.globalCompositeOperation = 'destination-out';
+    ctx.strokeStyle = 'rgba(0,0,0,1)';
+  } else {
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.strokeStyle = currentColor;
+  }
   ctx.lineWidth = brushSize;
   ctx.lineCap = 'round';
   ctx.lineJoin = 'round';
@@ -279,8 +346,9 @@ sizeSlider.addEventListener('input', () => {
 
 // Clear canvas
 btnClear.addEventListener('click', () => {
+  if (dripRafId) { cancelAnimationFrame(dripRafId); dripRafId = null; }
+  drips.length = 0;
   ctx.clearRect(0, 0, CANVAS_W, CANVAS_H);
-  initCanvas();
   clearStatus();
 });
 
@@ -314,7 +382,13 @@ function escapeHtml(str) {
 // SAVE GRAFFITI
 // =============================================
 btnSave.addEventListener('click', async () => {
-  const imageData = canvas.toDataURL('image/png');
+  const merged = document.createElement('canvas');
+  merged.width = CANVAS_W;
+  merged.height = CANVAS_H;
+  const mCtx = merged.getContext('2d');
+  mCtx.drawImage(bgCanvas, 0, 0);
+  mCtx.drawImage(canvas, 0, 0);
+  const imageData = merged.toDataURL('image/png');
   const author = authorInput.value.trim().slice(0, 50);
 
   btnSave.disabled = true;
@@ -336,7 +410,6 @@ btnSave.addEventListener('click', async () => {
       showStatus(data.error || 'Failed to save. Please try again.', 'error');
     } else {
       ctx.clearRect(0, 0, CANVAS_W, CANVAS_H);
-      initCanvas();
       authorInput.value = '';
       showStatus('Graffiti saved! It will appear in the gallery shortly.', 'success');
       setTimeout(() => {
@@ -666,6 +739,68 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
 })();
 
 // =============================================
+// AUDIO
+// =============================================
+(function () {
+  const sndHover = new Audio('gr1.mp3');
+  const sndDraw  = new Audio('gr2.mp3');
+  sndHover.loop   = true;
+  sndDraw.loop    = true;
+  sndHover.volume = 0.55;
+  sndDraw.volume  = 0.8;
+
+  function startSound(snd) {
+    if (snd.paused) {
+      snd.currentTime = 0;
+      snd.play().catch(() => {});
+    }
+  }
+
+  function stopSound(snd) {
+    if (!snd.paused) {
+      snd.pause();
+      snd.currentTime = 0;
+    }
+  }
+
+  // Hover — play gr1 when mouse enters canvas (not drawing)
+  canvas.addEventListener('mouseenter', () => {
+    if (!isDrawing) {
+      stopSound(sndDraw);
+      startSound(sndHover);
+    }
+  });
+
+  // Leave — stop all
+  canvas.addEventListener('mouseleave', () => {
+    stopSound(sndHover);
+    stopSound(sndDraw);
+  });
+
+  // Draw start — switch to gr2
+  canvas.addEventListener('mousedown', () => {
+    stopSound(sndHover);
+    startSound(sndDraw);
+  });
+
+  // Draw end — back to gr1 (still hovering)
+  canvas.addEventListener('mouseup', () => {
+    stopSound(sndDraw);
+    startSound(sndHover);
+  });
+
+  // Touch
+  canvas.addEventListener('touchstart', () => {
+    stopSound(sndHover);
+    startSound(sndDraw);
+  }, { passive: true });
+
+  canvas.addEventListener('touchend', () => {
+    stopSound(sndDraw);
+  }, { passive: true });
+})();
+
+// =============================================
 // SPLASH SCREEN
 // =============================================
 (function () {
@@ -685,5 +820,6 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
 // =============================================
 // INIT
 // =============================================
+initBgCanvas();
 initCanvas();
 loadGallery();
