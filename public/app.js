@@ -696,7 +696,7 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
 // CA COPY
 // =============================================
 (function () {
-  const CA_FULL = '0x0000000000000000000000000000000000000000';
+  const CA_FULL = 'wUrFv415kKhZ3Q4MdxhNfCtpzU5r9NT11tqAE4ipump';
   const copyBtn = document.getElementById('caCopy');
   if (!copyBtn) return;
   copyBtn.addEventListener('click', async () => {
